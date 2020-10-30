@@ -9,7 +9,7 @@ beta version: very limited capacities. Assumes python3.6, and install only libra
 
 ```bash
 # assumes python3
-pip install isr_debian
+pip install isr-debian
 ```
 
 # usage
