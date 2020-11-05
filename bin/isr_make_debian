@@ -4,23 +4,8 @@ import sys
 import os
 import logging
 import isr_debian
-from lightargs import BrightArgs,Set
+from lightargs import BrightArgs,Set,CanEval
 
-# for the configuration dialog to be able to check
-# the list provided for excluded ament packages is valid
-class _CanEval:
-    def __init__(self):
-        pass
-    def __str__(self):
-        return "check the value can be python evaluated"
-    def help(self):
-        return str(self)
-    def check(self,value):
-        try :
-            eval(value)
-        except Exception as e:
-            raise ValueError("failed to (python) evaluate: {} ({})".format(value,
-                                                                           e))
 
 def _configure():
 
@@ -56,18 +41,27 @@ def _configure():
     config.add_option("debian_package",
                       list(control_files.keys())[0],
                       "available control files found: {}".format(", ".join(control_files.keys())),
-                      Set(control_files.keys()))
+                      str,
+                      [Set(*list(control_files.keys()))])
     config.add_option("debian_lib_folder",
-                      "usr/lib",
-                      "path were the debian will install so files",
+                      "usr/local/lib",
+                      "path where the generated debian will install *.so files",
+                      str)
+    config.add_option("debian_include_folder",
+                      "usr/local/include",
+                      "path where the generated debian will install include folders",
+                      str)
+    config.add_option("debian_bin_folder",
+                      "usr/local/bin",
+                      "path where the generated debian will install executables",
                       str)
     config.add_option("debian_python_folder",
                       "usr/local/lib/python3.6/dist-packages",
-                      "path were the debian will install python package",
+                      "path where the generated debian will install python package",
                       str)
     config.add_option("debian_config_folder",
                       "opt/mpi-is/",
-                      "path were the debian will install configuration files",
+                      "path were the generated debian will install configuration files",
                       str)
     config.add_option("install_python_folder",
                       "lib/python3.6/site-packages",
@@ -81,7 +75,7 @@ def _configure():
                       '["ament_","mpi_cmake_module","pybind11"]',
                       'packages containing any of these strings will be excluded',
                       str,
-                      _CanEval())
+                      [CanEval()])
     change_all=False
     finished  = config.dialog(change_all,sys.argv[1:])
     if not finished:
@@ -108,6 +102,7 @@ def _execute():
     isr_debian.prepare_debian(config)
 
 if __name__ == "__main__":
-    _execute()
-
-    
+    try :
+        _execute()
+    except Exception as e:
+        print("\n{}\n".format(e))

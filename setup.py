@@ -1,7 +1,7 @@
 from setuptools import setup, find_packages
 
 setup( name='isr_debian',
-       version='beta1.00',
+       version='0.02',
        description='creating a debian for isr code base',
        classifiers=[
            'License :: OSI Approved :: MIT License',
